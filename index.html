@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Chess</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: radial-gradient(circle at center, #1e1b4b, #09090b);
+            color: #f8fafc;
+            padding: 16px;
+        }
+        .container {
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 24px;
+            border-radius: 28px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
+            text-align: center;
+            max-width: 420px;
+            width: 100%;
+        }
+        h1 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+            color: #ffffff;
+        }
+        .menu-screen, .game-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .hidden {
+            display: none !important;
+        }
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 14px;
+            cursor: pointer;
+            margin: 8px 0;
+            width: 100%;
+            transition: background 0.2s, transform 0.1s;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .btn:hover {
+            background: #4338ca;
+        }
+        .btn-secondary {
+            background: #334155;
+        }
+        .btn-secondary:hover {
+            background: #475569;
+        }
+        .status-bar {
+            font-size: 1rem;
+            margin-bottom: 12px;
+            font-weight: 500;
+            color: #38bdf8;
+            min-height: 24px;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(8, 1fr);
+            width: 360px;
+            height: 360px;
+            border: 4px solid #1e293b;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            margin-bottom: 16px;
+        }
+        .square {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.2rem;
+            cursor: pointer;
+            user-select: none;
+            transition: background 0.15s;
+        }
+        .square.light {
+            background: #cbd5e1;
+        }
+        .square.dark {
+            background: #475569;
+        }
+        .square.selected {
+            background: #38bdf8 !important;
+        }
+        .square.highlight {
+            background: #10b981 !important;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- MENU SCREEN -->
+        <div id="menu-screen" class="menu-screen">
+            <h1>CHESS</h1>
+            <p style="color: #94a3b8; margin-bottom: 24px; font-size: 0.95rem;">Select game mode to begin</p>
+            <button class="btn" onclick="startGame('pvp')">Pass & Play (PvP)</button>
+            <button class="btn btn-secondary" onclick="startGame('pve')">Play vs Bot (PvE)</button>
+        </div>
+
+        <!-- GAME SCREEN -->
+        <div id="game-screen" class="game-screen hidden">
+            <div id="status" class="status-bar">White's Turn</div>
+            <div id="board" class="board"></div>
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="resetGame()" style="margin: 0; padding: 10px; font-size: 0.9rem;">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const pieces = {
+            'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔', 'P': '♙',
+            'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚', 'p': '♟'
+        };
+
+        let board = [
+            ['r','n','b','q','k','b','n','r'],
+            ['p','p','p','p','p','p','p','p'],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['P','P','P','P','P','P','P','P'],
+            ['R','N','B','Q','K','B','N','R']
+        ];
+
+        let turn = 'W'; // 'W' or 'B'
+        let selectedSquare = null;
+        let gameMode = 'pvp'; // 'pvp' or 'pve'
+        let gameOver = false;
+
+        function startGame(mode) {
+            gameMode = mode;
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            resetBoardState();
+            renderBoard();
+        }
+
+        function resetGame() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('menu-screen').classList.remove('hidden');
+        }
+
+        function resetBoardState() {
+            board = [
+                ['r','n','b','q','k','b','n','r'],
+                ['p','p','p','p','p','p','p','p'],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['','','','','','','',''],
+                ['P','P','P','P','P','P','P','P'],
+                ['R','N','B','Q','K','B','N','R']
+            ];
+            turn = 'W';
+            selectedSquare = null;
+            gameOver = false;
+            document.getElementById('status').textContent = "White's Turn";
+        }
+
+        function renderBoard() {
+            const boardEl = document.getElementById('board');
+            boardEl.innerHTML = '';
+
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    const square = document.createElement('div');
+                    square.className = `square ${(r + c) % 2 === 0 ? 'light' : 'dark'}`;
+                    
+                    const piece = board[r][c];
+                    if (piece) {
+                        square.textContent = pieces[piece];
+                        square.style.color = piece === piece.toUpperCase() ? '#f8fafc' : '#0f172a';
+                    }
+
+                    if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+                        square.classList.add('selected');
+                    }
+
+                    square.onclick = () => handleSquareClick(r, c);
+                    boardEl.appendChild(square);
+                }
+            }
+        }
+
+        function handleSquareClick(r, c) {
+            if (gameOver) return;
+            if (gameMode === 'pve' && turn === 'B') return; // Prevent clicking during AI turn
+
+            const piece = board[r][c];
+            const isWhitePiece = piece && piece === piece.toUpperCase();
+            const isCurrentTurnPiece = (turn === 'W' && isWhitePiece) || (turn === 'B' && !isWhitePiece && piece !== '');
+
+            if (selectedSquare) {
+                if (selectedSquare.r === r && selectedSquare.c === c) {
+                    selectedSquare = null; // Deselect
+                } else if (isCurrentTurnPiece) {
+                    selectedSquare = { r, c }; // Switch selection
+                } else {
+                    // Attempt move
+                    movePiece(selectedSquare.r, selectedSquare.c, r, c);
+                    selectedSquare = null;
+                }
+            } else if (isCurrentTurnPiece) {
+                selectedSquare = { r, c };
+            }
+            renderBoard();
+        }
+
+        function movePS(fromR, fromC, toR, toC) {
+            board[toR][toC] = board[fromR][fromC];
+            board[fromR][fromC] = '';
+            
+            // Basic pawn promotion
+            if (board[toR][toC] === 'P' && toR === 0) board[toR][toC] = 'Q';
+            if (board[toR][toC] === 'p' && toR === 7) board[toR][toC] = 'q';
+
+            turn = turn === 'W' ? 'B' : 'W';
+            document.getElementById('status').textContent = `${turn === 'W' ? "White" : "Black"}'s Turn`;
+            
+            checkGameOver();
+        }
+
+        function movePiece(fromR, fromC, toR, toC) {
+            const target = board[toR][toC];
+            if (target.toLowerCase() === 'k') {
+                gameOver = true;
+                document.getElementById('status').textContent = `${turn === 'W' ? "White" : "Black"} wins!`;
+            }
+
+            movePS(fromR, fromC, toR, toC);
+
+            if (!gameOver && gameMode === 'pve' && turn === 'B') {
+                setTimeout(makeAIMove, 400);
+            }
+        }
+
+        function makeAIMove() {
+            if (gameOver) return;
+            let moves = [];
+            for (let r = 0; r < 8; r++) {
+                for (let c = 0; c < 8; c++) {
+                    if (board[r][c] && board[r][c] === board[r][c].toLowerCase()) {
+                        // Find basic random valid-ish moves for black bot
+                        for (let dr = -2; dr <= 2; dr++) {
+                            for (let dc = -2; dc <= 2; dc++) {
+                                let nr = r + dr, nc = c + dc;
+                                if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+                                    if (board[nr][nc] === '' || board[nr][nc] === board[nr][nc].toUpperCase()) {
+                                        moves.push({fromR: r, fromC: c, toR: nr, toC: nc});
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (moves.length > 0) {
+                let randomMove = moves[Math.floor(Math.random() * moves.length)];
+                if (board[randomMove.toR][randomMove.toC].toLowerCase() === 'k') {
+                    gameOver = true;
+                    document.getElementById('status').textContent = "Black wins!";
+                }
+                movePS(randomMove.fromR, randomMove.fromC, randomMove.toR, randomMove.toC);
+            }
+            renderBoard();
+        }
+
+        function checkGameOver() {
+            // Simplified check handled in movePiece/AIMove when kings are captured
+        }
+    </script>
+</body>
+</html>
