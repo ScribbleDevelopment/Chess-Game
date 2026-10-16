@@ -278,6 +278,12 @@
             margin-bottom: 6px;
             font-size: 1rem;
         }
+        .now-playing {
+            font-size: 0.75rem;
+            color: #38bdf8;
+            margin-top: 4px;
+            min-height: 16px;
+        }
     </style>
 </head>
 <body>
@@ -327,9 +333,10 @@
                     <input type="checkbox" id="toggle-sound" checked> Sound FX
                 </label>
                 <label class="checkbox-container">
-                    <input type="checkbox" id="toggle-music" onchange="toggleBGM()"> Songs Loop
+                    <input type="checkbox" id="toggle-music" onchange="toggleBGM()"> YouTube Playlist Loop
                 </label>
             </div>
+            <div id="now-playing" class="now-playing"></div>
 
             <button class="btn" onclick="startGame()">Start Match</button>
             <button class="btn btn-danger" onclick="resetPlayerElo()" style="font-size: 0.85rem; padding: 10px;">Reset Elo Profile</button>
@@ -380,6 +387,12 @@
         </div>
     </div>
 
+    <!-- Hidden YouTube Playlist Loop Engine -->
+    <div id="yt-container" style="display:none;"></div>
+
+    <!-- YouTube IFrame API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
+
     <script>
         const pieces = {
             'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔', 'P': '♙',
@@ -403,13 +416,89 @@
         let queensGambitMode = false;
         let currentBestMove = null;
 
-        // Looping precisely through the 3 requested songs: "Flower Man" (Toby Fox), "The Muffin Song" (asdfmovie), and "PALACE" (ImperfectNORE)
-        let audioCtx = null;
-        let songInterval = null;
-        let isMusicPlaying = false;
-        let playlistIndex = 0; 
-        let songStep = 0;
+        // YouTube Playlist Integration matching your exact requested links:
+        // 1. GWf9_qSrnOM (Flower Man - Deltarune Ch 5)
+        // 2. LACbVhgtx9I (The Muffin Song - asdfmovie)
+        // 3. OR7x18R7QAc (PALACE - ImperfectNORE)
+        const ytPlaylistIds = ['GWf9_qSrnOM', 'LACbVhgtx9I', 'OR7x18R7QAc'];
+        const ytSongNames = [
+            '♪ Flower Man (Toby Fox & Camellia)',
+            '♪ The Muffin Song (TomSka & Schmoyoho)',
+            '♪ PALACE (ImperfectNORE)'
+        ];
+        let currentTrackIndex = 0;
+        let player = null;
+        let ytApiReady = false;
 
+        function onYouTubeIframeAPIReady() {
+            ytApiReady = true;
+        }
+
+        function initYPlayer() {
+            if (player || !ytApiReady) return;
+            player = new YT.Player('yt-container', {
+                height: '0',
+                width: '0',
+                videoId: ytPlaylistIds[currentTrackIndex],
+                playerVars: {
+                    'autoplay': 1,
+                    'controls': 0,
+                    'disablekb': 1,
+                    'loop': 0,
+                    'playlist': ytPlaylistIds.join(',')
+                },
+                events: {
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+        }
+
+        function onPlayerStateChange(event) {
+            // When video ends (YT.PlayerState.ENDED), load next in playlist loop
+            if (event.data === YT.PlayerState.ENDED) {
+                currentTrackIndex = (currentTrackIndex + 1) % ytPlaylistIds.length;
+                updateNowPlayingDisplay();
+            } else if (event.data === YT.PlayerState.PLAYING) {
+                updateNowPlayingDisplay();
+            }
+        }
+
+        function updateNowPlayingDisplay() {
+            const el = document.getElementById('now-playing');
+            if (document.getElementById('toggle-music').checked) {
+                // Determine active track from player if available
+                let activeId = player && player.getVideoData ? player.getVideoData().video_id : ytPlaylistIds[currentTrackIndex];
+                let idx = ytPlaylistIds.indexOf(activeId);
+                if (idx !== -1) currentTrackIndex = idx;
+                el.textContent = `Now Playing: ${ytSongNames[currentTrackIndex]}`;
+            } else {
+                el.textContent = '';
+            }
+        }
+
+        function toggleBGM() {
+            let wantMusic = document.getElementById('toggle-music').checked;
+            if (wantMusic) {
+                if (!ytApiReady) {
+                    setTimeout(toggleBGM, 500); // Wait for API if loading
+                    return;
+                }
+                if (!player) {
+                    initYPlayer();
+                } else {
+                    player.playVideo();
+                }
+                updateNowPlayingDisplay();
+            } else {
+                if (player && typeof player.pauseVideo === 'function') {
+                    player.pauseVideo();
+                }
+                document.getElementById('now-playing').textContent = '';
+            }
+        }
+
+        // Web Audio for Sound FX (Moves, Captures, Checks, Victory)
+        let audioCtx = null;
         function initAudio() {
             if (!audioCtx) {
                 audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -466,105 +555,6 @@
                     o.start(now + idx * 0.12);
                     o.stop(now + idx * 0.12 + 0.6);
                 });
-            }
-        }
-
-        function toggleBGM() {
-            let wantMusic = document.getElementById('toggle-music').checked;
-            if (wantMusic) {
-                initAudio();
-                isMusicPlaying = true;
-                if (!songInterval) {
-                    const songs = [
-                        {
-                            name: "Flower Man - Toby Fox",
-                            phrases: [
-                                { notes: [523.25, 659.25, 783.99, 1046.50], bass: 130.81, type: 'triangle' },
-                                { notes: [587.33, 698.46, 880.00, 1174.66], bass: 146.83, type: 'triangle' },
-                                { notes: [493.88, 622.25, 739.99, 987.77], bass: 123.47, type: 'triangle' },
-                                { notes: [440.00, 523.25, 659.25, 880.00], bass: 110.00, type: 'triangle' }
-                            ]
-                        },
-                        {
-                            name: "The Muffin Song - AFSD Movie",
-                            phrases: [
-                                { notes: [392.00, 493.88, 587.33, 783.99], bass: 98.00, type: 'square' },
-                                { notes: [349.23, 440.00, 523.25, 698.46], bass: 87.31, type: 'square' },
-                                { notes: [329.63, 392.00, 493.88, 659.25], bass: 82.41, type: 'square' },
-                                { notes: [440.00, 554.37, 659.25, 880.00], bass: 110.00, type: 'square' }
-                            ]
-                        },
-                        {
-                            name: "PALACE - ImperfectNORE",
-                            phrases: [
-                                { notes: [220.00, 329.63, 440.00, 659.25], bass: 55.00, type: 'sine' },
-                                { notes: [174.61, 261.63, 349.23, 523.25], bass: 43.65, type: 'sine' },
-                                { notes: [146.83, 220.00, 293.66, 440.00], bass: 36.71, type: 'sine' },
-                                { notes: [164.81, 246.94, 329.63, 493.88], bass: 41.20, type: 'sine' }
-                            ]
-                        }
-                    ];
-
-                    songInterval = setInterval(() => {
-                        if (!isMusicPlaying) return;
-
-                        let currentSong = songs[playlistIndex];
-                        let phrase = currentSong.phrases[songStep % currentSong.phrases.length];
-                        
-                        songStep++;
-                        if (songStep >= currentSong.phrases.length) {
-                            songStep = 0;
-                            playlistIndex = (playlistIndex + 1) % songs.length;
-                        }
-
-                        let now = audioCtx.currentTime;
-
-                        let bassOsc = audioCtx.createOscillator();
-                        let bassGain = audioCtx.createGain();
-                        let bassFilter = audioCtx.createBiquadFilter();
-                        bassOsc.type = 'sawtooth';
-                        bassOsc.frequency.setValueAtTime(phrase.bass, now);
-                        bassFilter.type = 'lowpass';
-                        bassFilter.frequency.setValueAtTime(240, now);
-                        bassOsc.connect(bassFilter);
-                        bassFilter.connect(bassGain);
-                        bassGain.connect(audioCtx.destination);
-                        bassGain.gain.setValueAtTime(0.001, now);
-                        bassGain.gain.linearRampToValueAtTime(0.18, now + 0.15);
-                        bassGain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
-                        bassOsc.start(now);
-                        bassOsc.stop(now + 2.2);
-
-                        phrase.notes.forEach((freq, i) => {
-                            let osc = audioCtx.createOscillator();
-                            let gain = audioCtx.createGain();
-                            let filter = audioCtx.createBiquadFilter();
-
-                            osc.type = phrase.type;
-                            osc.frequency.setValueAtTime(freq, now);
-
-                            filter.type = 'lowpass';
-                            filter.frequency.setValueAtTime(900, now);
-
-                            osc.connect(filter);
-                            filter.connect(gain);
-                            gain.connect(audioCtx.destination);
-
-                            gain.gain.setValueAtTime(0.001, now);
-                            gain.gain.linearRampToValueAtTime(0.11, now + 0.25);
-                            gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.4);
-
-                            osc.start(now);
-                            osc.stop(now + 2.4);
-                        });
-                    }, 2400);
-                }
-            } else {
-                isMusicPlaying = false;
-                if (songInterval) {
-                    clearInterval(songInterval);
-                    songInterval = null;
-                }
             }
         }
 
