@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Grandmaster Chess Pro</title>
+    <title>Grandmaster Chess Pro Ultimate</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,37 +15,40 @@
         body {
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
             background: radial-gradient(circle at center, #1e1b4b, #09090b);
             color: #f8fafc;
-            padding: 8px;
+            padding: 12px;
             overflow-x: hidden;
         }
         .container {
-            background: rgba(30, 41, 59, 0.85);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            padding: 12px;
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+            background: rgba(30, 41, 59, 0.9);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 24px;
+            border-radius: 28px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
             text-align: center;
-            max-width: 400px;
+            max-width: 440px;
             width: 100%;
-            margin-top: 4px;
+            margin: auto;
         }
         h1 {
-            font-size: 1.2rem;
-            margin-bottom: 4px;
-            letter-spacing: 1px;
-            color: #ffffff;
+            font-size: 2rem;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
         }
         .subtitle {
-            font-size: 0.8rem;
+            font-size: 0.95rem;
             color: #94a3b8;
-            margin-bottom: 10px;
+            margin-bottom: 24px;
         }
         .menu-screen, .game-screen {
             display: flex;
@@ -57,89 +60,120 @@
             display: none !important;
         }
         .btn {
-            background: #4f46e5;
+            background: linear-gradient(135deg, #4f46e5, #6366f1);
             color: white;
             border: none;
-            padding: 10px 16px;
-            font-size: 0.95rem;
+            padding: 14px 24px;
+            font-size: 1.1rem;
             font-weight: 600;
-            border-radius: 12px;
+            border-radius: 14px;
             cursor: pointer;
-            margin: 5px 0;
+            margin: 10px 0;
             width: 100%;
-            transition: background 0.2s, transform 0.1s;
+            box-shadow: 0 4px 15px rgba(79, 70, 229, 0.4);
+            transition: all 0.2s ease;
         }
         .btn:active {
             transform: scale(0.97);
         }
         .btn:hover {
-            background: #4338ca;
+            filter: brightness(1.1);
+            box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
         }
         .btn-secondary {
             background: #334155;
+            box-shadow: none;
         }
         .btn-secondary:hover {
             background: #475569;
         }
         .btn-danger {
-            background: #e11d48;
-        }
-        .btn-danger:hover {
-            background: #be123c;
+            background: linear-gradient(135deg, #e11d48, #f43f5e);
+            box-shadow: 0 4px 15px rgba(225, 29, 72, 0.4);
         }
         .settings-group {
             width: 100%;
-            margin-bottom: 8px;
+            margin-bottom: 16px;
             text-align: left;
         }
         .settings-group label {
-            font-size: 0.8rem;
+            font-size: 0.9rem;
             color: #cbd5e1;
-            margin-bottom: 3px;
+            margin-bottom: 6px;
             display: block;
+            font-weight: 500;
         }
         select {
             width: 100%;
-            padding: 8px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 12px;
             background: #1e293b;
             color: #fff;
             border: 1px solid #475569;
-            font-size: 0.9rem;
+            font-size: 1rem;
             outline: none;
+        }
+        .avatar-grid {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            width: 100%;
+        }
+        .avatar-option {
+            font-size: 1.6rem;
+            padding: 8px;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .avatar-option.selected {
+            border-color: #38bdf8;
+            background: rgba(56, 189, 248, 0.15);
+            transform: scale(1.05);
         }
         .hud {
             display: flex;
             justify-content: space-between;
+            align-items: center;
             width: 100%;
-            font-size: 0.8rem;
-            margin-bottom: 6px;
-            padding: 0 4px;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+            padding: 4px 8px;
+            background: rgba(15, 23, 42, 0.6);
+            border-radius: 10px;
             color: #cbd5e1;
         }
+        .hud-profile {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
         .status-bar {
-            font-size: 0.9rem;
-            margin-bottom: 6px;
-            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 8px;
+            font-weight: 700;
             color: #38bdf8;
-            min-height: 20px;
+            min-height: 24px;
         }
         .board-container {
             position: relative;
-            width: 324px;
-            height: 324px;
-            margin: 0 auto 8px auto;
+            width: 340px;
+            height: 340px;
+            margin: 0 auto 10px auto;
         }
         .board {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
             grid-template-rows: repeat(8, 1fr);
-            width: 304px;
-            height: 304px;
+            width: 320px;
+            height: 320px;
             border: 3px solid #1e293b;
-            border-radius: 8px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             position: absolute;
             top: 10px;
             left: 10px;
@@ -148,20 +182,20 @@
             position: absolute;
             display: flex;
             color: #64748b;
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: bold;
             user-select: none;
         }
         .file-labels {
             bottom: 0;
             left: 10px;
-            width: 304px;
+            width: 320px;
             justify-content: space-around;
         }
         .rank-labels {
             top: 10px;
             left: 0;
-            height: 304px;
+            height: 320px;
             flex-direction: column;
             justify-content: space-around;
             align-items: center;
@@ -171,62 +205,56 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.8rem;
+            font-size: 2rem;
             cursor: pointer;
             user-select: none;
-            transition: background 0.15s;
+            transition: background 0.15s, transform 0.2s;
+            position: relative;
         }
-        .square.light {
-            background: #cbd5e1;
-        }
-        .square.dark {
-            background: #475569;
-        }
-        .square.selected {
-            background: #38bdf8 !important;
-        }
-        .square.highlight {
-            background: rgba(16, 185, 129, 0.65) !important;
-        }
-        .square.check {
-            background: rgba(239, 68, 68, 0.85) !important;
-        }
-        .square.best-move {
-            background: rgba(234, 179, 8, 0.65) !important;
-        }
+        .square.light { background: #cbd5e1; }
+        .square.dark { background: #475569; }
+        .square.selected { background: #38bdf8 !important; }
+        .square.highlight { background: rgba(16, 185, 129, 0.7) !important; }
+        .square.check { background: rgba(239, 68, 68, 0.9) !important; }
+        .square.best-move { background: rgba(234, 179, 8, 0.7) !important; }
+        
         .panel-row {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             width: 100%;
-            margin-bottom: 6px;
+            margin-top: 8px;
         }
         .move-list {
             background: #0f172a;
             border: 1px solid #334155;
-            border-radius: 8px;
-            height: 65px;
+            border-radius: 10px;
+            height: 75px;
             overflow-y: auto;
-            padding: 4px 8px;
+            padding: 6px 10px;
             text-align: left;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             color: #94a3b8;
             width: 100%;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
         .move-list div {
-            padding: 1px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
+            padding: 2px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .checkbox-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            align-items: center;
         }
         .checkbox-container {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            color: #cbd5e1;
+            gap: 6px;
             cursor: pointer;
-            margin-bottom: 6px;
-            text-align: left;
-            width: 100%;
         }
         .checkbox-container input {
             accent-color: #4f46e5;
@@ -242,8 +270,19 @@
         <!-- MENU SCREEN -->
         <div id="menu-screen" class="menu-screen">
             <h1>CHESS PRO</h1>
-            <p class="subtitle">Your Elo: <span id="menu-player-elo" style="color: #38bdf8; font-weight: bold;">400</span></p>
+            <p class="subtitle">Grandmaster Edition &bull; Elo: <span id="menu-player-elo" style="color: #38bdf8; font-weight: bold;">400</span></p>
             
+            <div class="settings-group">
+                <label>Choose Your Avatar</label>
+                <div class="avatar-grid" id="avatar-selector">
+                    <div class="avatar-option selected" onclick="selectAvatar('👑')">👑</div>
+                    <div class="avatar-option" onclick="selectAvatar('🧙‍♂️')">🧙‍♂️</div>
+                    <div class="avatar-option" onclick="selectAvatar('🛡️')">🛡️</div>
+                    <div class="avatar-option" onclick="selectAvatar('🤖')">🤖</div>
+                    <div class="avatar-option" onclick="selectAvatar('🥷')">🥷</div>
+                </div>
+            </div>
+
             <div class="settings-group">
                 <label>Game Mode</label>
                 <select id="mode-select" onchange="toggleModeSettings()">
@@ -253,7 +292,7 @@
             </div>
 
             <div class="settings-group" id="bot-settings">
-                <label>Bot Difficulty (Elo)</label>
+                <label>Bot Difficulty & Naming</label>
                 <select id="bot-elo">
                     <option value="100">100 Elo (tengoz)</option>
                     <option value="300">300 Elo (tengoz)</option>
@@ -267,15 +306,24 @@
                 </select>
             </div>
 
+            <div class="checkbox-row" style="justify-content: flex-start; gap: 20px;">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="toggle-sound" checked> Sound FX
+                </label>
+                <label class="checkbox-container">
+                    <input type="checkbox" id="toggle-music" onchange="toggleBGM()"> Ambient BGM
+                </label>
+            </div>
+
             <button class="btn" onclick="startGame()">Start Match</button>
-            <button class="btn btn-danger" onclick="resetPlayerElo()" style="font-size: 0.8rem; padding: 6px;">Reset Elo Profile</button>
+            <button class="btn btn-danger" onclick="resetPlayerElo()" style="font-size: 0.85rem; padding: 10px;">Reset Elo Profile</button>
         </div>
 
         <!-- GAME SCREEN -->
         <div id="game-screen" class="game-screen hidden">
             <div class="hud">
-                <span id="hud-player">You: 400 Elo</span>
-                <span id="hud-bot">Bot: 1200 Elo</span>
+                <div class="hud-profile"><span id="hud-player-avatar">👑</span> <span id="hud-player">You: 400</span></div>
+                <div class="hud-profile"><span id="hud-bot-avatar">🤖</span> <span id="hud-bot">Bot: 1200</span></div>
             </div>
             <div id="status" class="status-bar">White's Turn</div>
 
@@ -289,15 +337,21 @@
                 </div>
             </div>
 
-            <label class="checkbox-container">
-                <input type="checkbox" id="toggle-best-move" onchange="toggleBestMoveDisplay()"> Show Best Move Helper
-            </label>
+            <div class="checkbox-row">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="toggle-best-move" onchange="toggleBestMoveDisplay()"> Best Move Helper
+                </label>
+                <select id="best-move-mode" onchange="calculateBestMoveAsync()" style="width: 140px; padding: 4px; font-size: 0.75rem;">
+                    <option value="standard">Standard (Minimax)</option>
+                    <option value="gambit">Queen's Gambit</option>
+                </select>
+            </div>
 
             <div id="move-list" class="move-list"></div>
 
             <div class="panel-row">
-                <button class="btn btn-secondary" onclick="returnToMenu()" style="margin: 0; padding: 8px; font-size: 0.8rem;">Menu</button>
-                <button class="btn btn-danger" onclick="restartMatch()" style="margin: 0; padding: 8px; font-size: 0.8rem;">Restart</button>
+                <button class="btn btn-secondary" onclick="returnToMenu()" style="margin: 0; padding: 10px; font-size: 0.9rem;">Menu</button>
+                <button class="btn btn-danger" onclick="restartMatch()" style="margin: 0; padding: 10px; font-size: 0.9rem;">Restart</button>
             </div>
         </div>
     </div>
@@ -311,8 +365,9 @@
         const pieceValues = { 'P': 100, 'N': 320, 'B': 330, 'R': 500, 'Q': 900, 'K': 20000 };
 
         let playerElo = parseInt(localStorage.getItem('chess_player_elo')) || 400;
+        let selectedAvatar = '👑';
         let board = [];
-        let turn = 'W'; // 'W' or 'B'
+        let turn = 'W';
         let selectedSquare = null;
         let validMoves = [];
         let gameMode = 'pve';
@@ -323,7 +378,108 @@
         let showBestMove = false;
         let currentBestMove = null;
 
+        // Audio Context & Synth
+        let audioCtx = null;
+        let bgmInterval = null;
+        let isBgmPlaying = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playSound(type) {
+            if (!document.getElementById('toggle-sound').checked) return;
+            initAudio();
+            let osc = audioCtx.createOscillator();
+            let gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            let now = audioCtx.currentTime;
+            if (type === 'move') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(440, now);
+                osc.frequency.exponentialRampToValueAtTime(220, now + 0.08);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            } else if (type === 'capture') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(220, now);
+                osc.frequency.exponentialRampToValueAtTime(110, now + 0.12);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'check') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(587.33, now);
+                osc.frequency.setValueAtTime(880, now + 0.1);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+                osc.start(now);
+                osc.stop(now + 0.25);
+            } else if (type === 'victory') {
+                let notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, idx) => {
+                    let o = audioCtx.createOscillator();
+                    let g = audioCtx.createGain();
+                    o.connect(g);
+                    g.connect(audioCtx.destination);
+                    o.frequency.setValueAtTime(freq, now + idx * 0.12);
+                    g.gain.setValueAtTime(0.2, now + idx * 0.12);
+                    g.gain.exponentialRampToValueAtTime(0.01, now + idx * 0.12 + 0.3);
+                    o.start(now + idx * 0.12);
+                    o.stop(now + idx * 0.12 + 0.3);
+                });
+            }
+        }
+
+        function toggleBGM() {
+            let wantMusic = document.getElementById('toggle-music').checked;
+            if (wantMusic) {
+                initAudio();
+                isBgmPlaying = true;
+                if (!bgmInterval) {
+                    let chordNotes = [261.63, 329.63, 392.00, 523.25];
+                    let step = 0;
+                    bgmInterval = setInterval(() => {
+                        if (!isBgmPlaying) return;
+                        let osc = audioCtx.createOscillator();
+                        let gain = audioCtx.createGain();
+                        osc.connect(gain);
+                        gain.connect(audioCtx.destination);
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(chordNotes[step % chordNotes.length], audioCtx.currentTime);
+                        gain.gain.setValueAtTime(0.03, audioCtx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 1.2);
+                        step++;
+                    }, 1500);
+                }
+            } else {
+                isBgmPlaying = false;
+                if (bgmInterval) {
+                    clearInterval(bgmInterval);
+                    bgmInterval = null;
+                }
+            }
+        }
+
         document.getElementById('menu-player-elo').textContent = playerElo;
+
+        function selectAvatar(avatar) {
+            selectedAvatar = avatar;
+            document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
+            event.currentTarget.classList.add('selected');
+        }
 
         function toggleModeSettings() {
             const mode = document.getElementById('mode-select').value;
@@ -342,8 +498,10 @@
             botEloSetting = parseInt(document.getElementById('bot-elo').value);
             botName = botEloSetting > 1000 ? 'Scribble' : 'tengoz';
 
-            document.getElementById('hud-player').textContent = `You: ${playerElo} Elo`;
-            document.getElementById('hud-bot').textContent = `${botName}: ${botEloSetting} Elo`;
+            document.getElementById('hud-player-avatar').textContent = selectedAvatar;
+            document.getElementById('hud-bot-avatar').textContent = botEloSetting > 1000 ? '🦊' : '🤖';
+            document.getElementById('hud-player').textContent = `You: ${playerElo}`;
+            document.getElementById('hud-bot').textContent = `${botName}: ${botEloSetting}`;
 
             document.getElementById('menu-screen').classList.add('hidden');
             document.getElementById('game-screen').classList.remove('hidden');
@@ -529,6 +687,10 @@
             let whiteKingPos = findKing('W', board);
             let blackKingPos = findKing('B', board);
 
+            if (whiteInCheck || blackInCheck) {
+                playSound('check');
+            }
+
             for (let r = 0; r < 8; r++) {
                 for (let c = 0; c < 8; c++) {
                     const square = document.createElement('div');
@@ -621,10 +783,15 @@
             const target = board[toR][toC];
             const moveNotation = `${piece.toUpperCase() !== 'P' ? piece.toUpperCase() : ''}${squareToAlgebraic(fromR, fromC)}-${squareToAlgebraic(toR, toC)}${target ? 'x' : ''}`;
 
+            if (target !== '') {
+                playSound('capture');
+            } else {
+                playSound('move');
+            }
+
             board[toR][toC] = piece;
             board[fromR][fromC] = '';
 
-            // Promotion
             if (piece === 'P' && toR === 0) board[toR][toC] = 'Q';
             if (piece === 'p' && toR === 7) board[toR][toC] = 'q';
 
@@ -636,6 +803,7 @@
             let enemyColor = turn;
             if (!hasAnyLegalMoves(enemyColor, board)) {
                 gameOver = true;
+                playSound('victory');
                 if (isInCheck(enemyColor, board)) {
                     let winner = enemyColor === 'W' ? "Black" : "White";
                     document.getElementById('status').textContent = `Checkmate! ${winner} wins!`;
@@ -652,7 +820,7 @@
             calculateBestMoveAsync();
 
             if (gameMode === 'pve' && turn === 'B' && !gameOver) {
-                setTimeout(makeAIMove, 300);
+                setTimeout(makeAIMove, 350);
             }
         }
 
@@ -670,17 +838,17 @@
         function handleGameOverElo(winner) {
             if (gameMode === 'pvp') return;
             let eloChange = 0;
-            if (winner === 'White') { // User won
+            if (winner === 'White') {
                 eloChange = Math.max(10, Math.floor((botEloSetting - playerElo) / 10) + 20);
                 playerElo += eloChange;
                 alert(`Victory! You gained +${eloChange} Elo!`);
-            } else { // Bot won
+            } else {
                 eloChange = Math.max(10, Math.floor((playerElo - botEloSetting) / 10) + 20);
                 playerElo = Math.max(100, playerElo - eloChange);
                 alert(`Defeat! You lost -${eloChange} Elo.`);
             }
             localStorage.setItem('chess_player_elo', playerElo);
-            document.getElementById('hud-player').textContent = `You: ${playerElo} Elo`;
+            document.getElementById('hud-player').textContent = `You: ${playerElo}`;
         }
 
         function evaluateBoard(currentBoard) {
@@ -738,7 +906,25 @@
         function calculateBestMoveAsync() {
             setTimeout(() => {
                 if (gameOver) return;
+                let helperMode = document.getElementById('best-move-mode').value;
                 let color = turn;
+
+                if (helperMode === 'gambit' && color === 'W') {
+                    // Queen's Gambit opening book sequence for White
+                    if (moveHistory.length === 0) {
+                        // 1. d4 (from row 6, col 3 to row 4, col 3)
+                        currentBestMove = { fromR: 6, fromC: 3, toR: 4, toC: 3 };
+                        if (showBestMove) renderBoard();
+                        return;
+                    } else if (moveHistory.length === 2 && moveHistory[1].startsWith('d5')) {
+                        // 2. c4 (from row 6, col 2 to row 4, col 2)
+                        currentBestMove = { fromR: 6, fromC: 2, toR: 4, toC: 2 };
+                        if (showBestMove) renderBoard();
+                        return;
+                    }
+                }
+
+                // Fallback to Standard Minimax Best Move
                 let allPseudo = getAllPseudoMoves(color, board);
                 let legalMoves = [];
                 for (let m of allPseudo) {
@@ -782,7 +968,6 @@
 
             let chosenMove;
             if (botEloSetting <= 300) {
-                // Low elo bot makes random moves frequently
                 chosenMove = legalMoves[Math.floor(Math.random() * legalMoves.length)];
             } else {
                 let bestScore = Infinity;
