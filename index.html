@@ -327,7 +327,7 @@
                     <input type="checkbox" id="toggle-sound" checked> Sound FX
                 </label>
                 <label class="checkbox-container">
-                    <input type="checkbox" id="toggle-music" onchange="toggleBGM()"> Soundtrack Mix
+                    <input type="checkbox" id="toggle-music" onchange="toggleBGM()"> Songs Loop
                 </label>
             </div>
 
@@ -403,10 +403,11 @@
         let queensGambitMode = false;
         let currentBestMove = null;
 
-        // Custom Soundtrack Synthesizer ("Flower Man", "The Muffin Song", "PALACE")
+        // Looping precisely through the 3 requested songs: "Flower Man" (Toby Fox), "The Muffin Song" (asdfmovie), and "PALACE" (ImperfectNORE)
         let audioCtx = null;
-        let bgmInterval = null;
-        let isBgmPlaying = false;
+        let songInterval = null;
+        let isMusicPlaying = false;
+        let playlistIndex = 0; 
         let songStep = 0;
 
         function initAudio() {
@@ -472,42 +473,57 @@
             let wantMusic = document.getElementById('toggle-music').checked;
             if (wantMusic) {
                 initAudio();
-                isBgmPlaying = true;
-                if (!bgmInterval) {
-                    // Medley looping through themes inspired by Flower Man, The Muffin Song, and Palace
-                    const soundtrackSequence = [
-                        // Part 1: "Flower Man" motif (Toby Fox - upbeat boss battle/melodic rhythm)
-                        { notes: [523.25, 659.25, 783.99, 1046.50], bass: 130.81, type: 'triangle' },
-                        { notes: [587.33, 698.46, 880.00, 1174.66], bass: 146.83, type: 'triangle' },
-                        { notes: [493.88, 622.25, 739.99, 987.77], bass: 123.47, type: 'triangle' },
-                        { notes: [440.00, 523.25, 659.25, 880.00], bass: 110.00, type: 'triangle' },
-                        
-                        // Part 2: "The Muffin Song" motif (catchy, bouncy upbeat groove)
-                        { notes: [392.00, 493.88, 587.33, 783.99], bass: 98.00, type: 'square' },
-                        { notes: [349.23, 440.00, 523.25, 698.46], bass: 87.31, type: 'square' },
-                        { notes: [329.63, 392.00, 493.88, 659.25], bass: 82.41, type: 'square' },
-                        { notes: [440.00, 554.37, 659.25, 880.00], bass: 110.00, type: 'square' },
-
-                        // Part 3: "PALACE" motif (ImperfectNORE - atmospheric, resonant synth chords)
-                        { notes: [220.00, 329.63, 440.00, 659.25], bass: 55.00, type: 'sine' },
-                        { notes: [174.61, 261.63, 349.23, 523.25], bass: 43.65, type: 'sine' },
-                        { notes: [146.83, 220.00, 293.66, 440.00], bass: 36.71, type: 'sine' },
-                        { notes: [164.81, 246.94, 329.63, 493.88], bass: 41.20, type: 'sine' }
+                isMusicPlaying = true;
+                if (!songInterval) {
+                    const songs = [
+                        {
+                            name: "Flower Man - Toby Fox",
+                            phrases: [
+                                { notes: [523.25, 659.25, 783.99, 1046.50], bass: 130.81, type: 'triangle' },
+                                { notes: [587.33, 698.46, 880.00, 1174.66], bass: 146.83, type: 'triangle' },
+                                { notes: [493.88, 622.25, 739.99, 987.77], bass: 123.47, type: 'triangle' },
+                                { notes: [440.00, 523.25, 659.25, 880.00], bass: 110.00, type: 'triangle' }
+                            ]
+                        },
+                        {
+                            name: "The Muffin Song - AFSD Movie",
+                            phrases: [
+                                { notes: [392.00, 493.88, 587.33, 783.99], bass: 98.00, type: 'square' },
+                                { notes: [349.23, 440.00, 523.25, 698.46], bass: 87.31, type: 'square' },
+                                { notes: [329.63, 392.00, 493.88, 659.25], bass: 82.41, type: 'square' },
+                                { notes: [440.00, 554.37, 659.25, 880.00], bass: 110.00, type: 'square' }
+                            ]
+                        },
+                        {
+                            name: "PALACE - ImperfectNORE",
+                            phrases: [
+                                { notes: [220.00, 329.63, 440.00, 659.25], bass: 55.00, type: 'sine' },
+                                { notes: [174.61, 261.63, 349.23, 523.25], bass: 43.65, type: 'sine' },
+                                { notes: [146.83, 220.00, 293.66, 440.00], bass: 36.71, type: 'sine' },
+                                { notes: [164.81, 246.94, 329.63, 493.88], bass: 41.20, type: 'sine' }
+                            ]
+                        }
                     ];
 
-                    bgmInterval = setInterval(() => {
-                        if (!isBgmPlaying) return;
-                        let current = soundtrackSequence[songStep % soundtrackSequence.length];
+                    songInterval = setInterval(() => {
+                        if (!isMusicPlaying) return;
+
+                        let currentSong = songs[playlistIndex];
+                        let phrase = currentSong.phrases[songStep % currentSong.phrases.length];
+                        
                         songStep++;
+                        if (songStep >= currentSong.phrases.length) {
+                            songStep = 0;
+                            playlistIndex = (playlistIndex + 1) % songs.length;
+                        }
 
                         let now = audioCtx.currentTime;
 
-                        // Punchy, clear bassline (louder & well-balanced)
                         let bassOsc = audioCtx.createOscillator();
                         let bassGain = audioCtx.createGain();
                         let bassFilter = audioCtx.createBiquadFilter();
                         bassOsc.type = 'sawtooth';
-                        bassOsc.frequency.setValueAtTime(current.bass, now);
+                        bassOsc.frequency.setValueAtTime(phrase.bass, now);
                         bassFilter.type = 'lowpass';
                         bassFilter.frequency.setValueAtTime(240, now);
                         bassOsc.connect(bassFilter);
@@ -519,13 +535,12 @@
                         bassOsc.start(now);
                         bassOsc.stop(now + 2.2);
 
-                        // Clear melody stack (optimized loudness & richness)
-                        current.notes.forEach((freq, i) => {
+                        phrase.notes.forEach((freq, i) => {
                             let osc = audioCtx.createOscillator();
                             let gain = audioCtx.createGain();
                             let filter = audioCtx.createBiquadFilter();
 
-                            osc.type = current.type;
+                            osc.type = phrase.type;
                             osc.frequency.setValueAtTime(freq, now);
 
                             filter.type = 'lowpass';
@@ -545,10 +560,10 @@
                     }, 2400);
                 }
             } else {
-                isBgmPlaying = false;
-                if (bgmInterval) {
-                    clearInterval(bgmInterval);
-                    bgmInterval = null;
+                isMusicPlaying = false;
+                if (songInterval) {
+                    clearInterval(songInterval);
+                    songInterval = null;
                 }
             }
         }
